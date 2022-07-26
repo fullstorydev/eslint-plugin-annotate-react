@@ -1,6 +1,6 @@
 {
   "name": "@fullstory/eslint-plugin-annotate-react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An ESLint plugin for annotating React components.",
   "repository": "github:fullstorydev/eslint-plugin-annotate-react",
   "license": "MIT",
