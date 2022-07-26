@@ -1,0 +1,30 @@
+version: 2.1
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:lts
+    working_directory: ~/repo
+jobs:
+  publish-eslint-plugin:
+    executor: node-executor
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+      - run:
+          name: Publish package
+          command: npm publish --access public
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - publish-eslint-plugin:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

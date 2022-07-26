@@ -1,0 +1,21 @@
+{
+  "name": "@fullstory/eslint-plugin-annotate-react",
+  "version": "0.0.0",
+  "description": "An ESLint plugin for annotating React components.",
+  "repository": "github:fullstorydev/eslint-plugin-annotate-react",
+  "license": "MIT",
+  "author": "FullStory, Inc.",
+  "scripts": {
+    "prepare": "pro-commit",
+    "pro-commit:task": "pretty-quick --staged"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "devDependencies": {
+    "prettier": "^2.7.0",
+    "pretty-quick": "^3.1.0",
+    "pro-commit": "^1.2.0"
+  }
+}

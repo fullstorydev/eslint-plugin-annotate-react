@@ -1,0 +1,43 @@
+# @fullstory/eslint-plugin-annotate-react
+
+An ESLint plugin for annotating React components.
+
+## Installation
+
+You'll first need to install [ESLint](https://eslint.org/):
+
+```sh
+npm i eslint --save-dev
+```
+
+Next, install `@fullstory/eslint-plugin-annotate-react`:
+
+```sh
+npm install @fullstory/eslint-plugin-annotate-react --save-dev
+```
+
+## Usage
+
+Add `@fullstory/eslint-plugin-annotate-react` to the plugins section of your `.eslintrc` configuration file. You can omit the `eslint-plugin-` prefix:
+
+```json
+{
+  "plugins": ["@fullstory/annotate-react"]
+}
+```
+
+Then configure the rules you want to use under the rules section.
+
+```json
+{
+  "rules": {
+    "@fullstory/annotate-react/data-component": "error"
+  }
+}
+```
+
+## Supported Rules
+
+### @fullstory/annotate-react/data-component
+
+...
