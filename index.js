@@ -46,6 +46,11 @@ const rules = {
     create(context) {
       const { visitorKeys } = context.getSourceCode();
 
+      const excludeComponentNames =
+        context.options?.[0]?.excludeComponentNames?.map(
+          (regex) => new RegExp(regex),
+        ) ?? [/Provider$/];
+
       return {
         Program(node) {
           const componentNodes = node.body
@@ -82,7 +87,7 @@ const rules = {
                   throw DONE_WITH_SUBTREE;
                 } else if (
                   current.type === 'JSXElement' &&
-                  [/Provider$/].every(
+                  excludeComponentNames.every(
                     (regex) =>
                       !regex.test(
                         current.openingElement.name.property
@@ -132,7 +137,7 @@ const rules = {
           traverseTree(componentNode, visitorKeys, (current) => {
             if (
               current.type === 'JSXElement' &&
-              [/Provider$/].every(
+              excludeComponentNames.every(
                 (regex) =>
                   !regex.test(
                     current.openingElement.name.property
