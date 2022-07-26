@@ -238,7 +238,9 @@ const rules = {
               message: `These components are missing data-component attributes for top-level elements: ${components}`,
               fix: (fixer) =>
                 fixer.insertTextAfterRange(
-                  fixNode.name.range,
+                  Boolean(fixNode.typeParameters)
+                    ? fixNode.typeParameters.range
+                    : fixNode.name.range,
                   ` data-component="${
                     Array.isArray(componentName)
                       ? componentName[0]
