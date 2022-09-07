@@ -32,13 +32,14 @@ function traverseTree(node, visitorKeys, callback) {
 }
 
 function getReturnStatement(node) {
+  if (!Boolean(node)) {
+    return;
+  }
+
   return node.type === 'VariableDeclaration'
     ? node.declarations?.[0]?.init?.body?.body?.find(
         (statement) => statement.type === 'ReturnStatement',
-      ) ??
-        (node.declarations?.[0]?.init?.body?.type === 'JSXElement'
-          ? node.declarations?.[0]?.init?.body
-          : null)
+      ) ?? node.declarations?.[0]?.init?.body
     : node.body?.body?.find(
         (statement) => statement.type === 'ReturnStatement',
       );
@@ -139,7 +140,7 @@ const rules = {
                     current.type === 'JSXElement' &&
                     current.openingElement.attributes.find(
                       (attributeNode) =>
-                        attributeNode.name.name === 'data-component',
+                        attributeNode.name?.name === 'data-component',
                     )
                   ) {
                     throw DONE_WITH_SUBTREE;
@@ -155,7 +156,7 @@ const rules = {
                     ) &&
                     !current.openingElement.attributes.find(
                       (attributeNode) =>
-                        attributeNode.name.name === 'data-component',
+                        attributeNode.name?.name === 'data-component',
                     ) &&
                     (isInNestedReturnStatement(
                       ancestors,
@@ -214,7 +215,7 @@ const rules = {
                 ) &&
                 !current.openingElement.attributes.find(
                   (attributeNode) =>
-                    attributeNode.name.name === 'data-component',
+                    attributeNode.name?.name === 'data-component',
                 ) &&
                 (isInNestedReturnStatement(
                   ancestors,
