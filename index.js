@@ -45,44 +45,6 @@ function getReturnStatement(node) {
       );
 }
 
-function isInNestedReturnStatement(ancestors, returnStatement) {
-  const nestedReturnStatementIndex = ancestors.findIndex(
-    (ancestor, index) =>
-      (ancestor.type === 'ReturnStatement' ||
-        (ancestor.type === 'JSXElement' &&
-          ancestors[index + 1]?.type === 'ArrowFunctionExpression')) &&
-      ancestor !== returnStatement,
-  );
-
-  const originalReturnStatementIndex = ancestors.findIndex(
-    (ancestor) => ancestor === returnStatement,
-  );
-
-  return (
-    nestedReturnStatementIndex !== -1 &&
-    originalReturnStatementIndex !== -1 &&
-    originalReturnStatementIndex > nestedReturnStatementIndex
-  );
-}
-
-function isInNestedFunction(ancestors, returnStatement) {
-  const nestedFunctionIndex = ancestors.findIndex(
-    (ancestor) =>
-      ancestor.type === 'ArrowFunctionExpression' ||
-      ancestor.type === 'FunctionDeclaration',
-  );
-
-  const originalReturnStatementIndex = ancestors.findIndex(
-    (ancestor) => ancestor === returnStatement,
-  );
-
-  return (
-    nestedFunctionIndex !== -1 &&
-    originalReturnStatementIndex !== -1 &&
-    originalReturnStatementIndex > nestedFunctionIndex
-  );
-}
-
 const rules = {
   'data-component': {
     meta: {
@@ -135,7 +97,7 @@ const rules = {
               traverseTree(
                 getReturnStatement(child),
                 visitorKeys,
-                (current, ancestors) => {
+                (current) => {
                   if (
                     current.type === 'JSXElement' &&
                     current.openingElement.attributes.find(
@@ -157,12 +119,7 @@ const rules = {
                     !current.openingElement.attributes.find(
                       (attributeNode) =>
                         attributeNode.name?.name === 'data-component',
-                    ) &&
-                    (isInNestedReturnStatement(
-                      ancestors,
-                      getReturnStatement(child),
-                    ) ||
-                      !isInNestedFunction(ancestors, getReturnStatement(child)))
+                    )
                   ) {
                     flag = true;
 
@@ -202,7 +159,7 @@ const rules = {
           traverseTree(
             getReturnStatement(componentNode),
             visitorKeys,
-            (current, ancestors) => {
+            (current) => {
               if (
                 current.type === 'JSXElement' &&
                 current.openingElement.attributes.find(
@@ -224,15 +181,7 @@ const rules = {
                 !current.openingElement.attributes.find(
                   (attributeNode) =>
                     attributeNode.name?.name === 'data-component',
-                ) &&
-                (isInNestedReturnStatement(
-                  ancestors,
-                  getReturnStatement(componentNode),
-                ) ||
-                  !isInNestedFunction(
-                    ancestors,
-                    getReturnStatement(componentNode),
-                  ))
+                )
               ) {
                 fixNode = current.openingElement;
 
