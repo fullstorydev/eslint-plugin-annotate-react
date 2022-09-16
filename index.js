@@ -205,6 +205,14 @@ const rules = {
             (current, ancestors) => {
               if (
                 current.type === 'JSXElement' &&
+                current.openingElement.attributes.find(
+                  (attributeNode) =>
+                    attributeNode.name?.name === 'data-component',
+                )
+              ) {
+                throw DONE_WITH_SUBTREE;
+              } else if (
+                current.type === 'JSXElement' &&
                 excludeComponentNames.every(
                   (regex) =>
                     !regex.test(
