@@ -195,11 +195,9 @@ const rules = {
               node: componentNode,
               message: `These components are missing data-component attributes for top-level elements: ${components}`,
               fix: (fixer) =>
-                fixer.insertTextAfterRange(
-                  Boolean(fixNode.typeParameters)
-                    ? fixNode.typeParameters.range
-                    : fixNode.name.range,
-                  ` data-component="${
+                fixer.insertTextAfter(
+                  fixNode.typeParameters ?? fixNode.name,
+                  `\ndata-component="${
                     Array.isArray(componentName)
                       ? componentName[0]
                       : componentName
