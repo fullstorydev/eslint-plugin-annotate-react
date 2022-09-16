@@ -45,6 +45,32 @@ function getReturnStatement(node) {
       );
 }
 
+function isTreeDone(node, excludeComponentNames) {
+  return (
+    node.type === 'JSXElement' &&
+    excludeComponentNames.every(
+      (regex) =>
+        !regex.test(
+          node.openingElement.name.property
+            ? node.openingElement.name.property.name
+            : node.openingElement.name.name,
+        ),
+    ) &&
+    !node.openingElement.attributes.find(
+      (attributeNode) => attributeNode.name?.name === 'data-component',
+    )
+  );
+}
+
+function isSubtreeDone(node) {
+  return (
+    node.type === 'JSXElement' &&
+    node.openingElement.attributes.find(
+      (attributeNode) => attributeNode.name?.name === 'data-component',
+    )
+  );
+}
+
 const rules = {
   'data-component': {
     meta: {
@@ -98,29 +124,9 @@ const rules = {
                 getReturnStatement(child),
                 visitorKeys,
                 (current) => {
-                  if (
-                    current.type === 'JSXElement' &&
-                    current.openingElement.attributes.find(
-                      (attributeNode) =>
-                        attributeNode.name?.name === 'data-component',
-                    )
-                  ) {
+                  if (isSubtreeDone(current)) {
                     throw DONE_WITH_SUBTREE;
-                  } else if (
-                    current.type === 'JSXElement' &&
-                    excludeComponentNames.every(
-                      (regex) =>
-                        !regex.test(
-                          current.openingElement.name.property
-                            ? current.openingElement.name.property.name
-                            : current.openingElement.name.name,
-                        ),
-                    ) &&
-                    !current.openingElement.attributes.find(
-                      (attributeNode) =>
-                        attributeNode.name?.name === 'data-component',
-                    )
-                  ) {
+                  } else if (isTreeDone(current, excludeComponentNames)) {
                     flag = true;
 
                     throw DONE_WITH_TREE;
@@ -160,29 +166,9 @@ const rules = {
             getReturnStatement(componentNode),
             visitorKeys,
             (current) => {
-              if (
-                current.type === 'JSXElement' &&
-                current.openingElement.attributes.find(
-                  (attributeNode) =>
-                    attributeNode.name?.name === 'data-component',
-                )
-              ) {
+              if (isSubtreeDone(current)) {
                 throw DONE_WITH_SUBTREE;
-              } else if (
-                current.type === 'JSXElement' &&
-                excludeComponentNames.every(
-                  (regex) =>
-                    !regex.test(
-                      current.openingElement.name.property
-                        ? current.openingElement.name.property.name
-                        : current.openingElement.name.name,
-                    ),
-                ) &&
-                !current.openingElement.attributes.find(
-                  (attributeNode) =>
-                    attributeNode.name?.name === 'data-component',
-                )
-              ) {
+              } else if (isTreeDone(current, excludeComponentNames)) {
                 fixNode = current.openingElement;
 
                 throw DONE_WITH_TREE;
