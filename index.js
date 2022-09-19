@@ -137,21 +137,6 @@ const rules = {
               return flag;
             });
 
-          const components = componentNodes
-            .map(
-              (child) =>
-                child?.id?.name ??
-                child?.declarations?.map(
-                  (declaration) => declaration?.id?.name,
-                ),
-            )
-            .reduce(
-              (previous, current) =>
-                current ? previous.concat(current) : previous,
-              [],
-            )
-            .join(', ');
-
           const [componentNode] = componentNodes;
 
           const componentName =
@@ -176,13 +161,17 @@ const rules = {
             },
           );
 
-          if (Boolean(components)) {
+          if (Boolean(componentName)) {
             context.report({
-              node: componentNode,
-              message: `These components are missing data-component attributes for top-level elements: ${components}`,
+              node: fixNode,
+              message: `${
+                Array.isArray(componentName) ? componentName[0] : componentName
+              } is missing the data-component attribute for the top-level element.`,
               fix: (fixer) =>
-                fixer.insertTextAfter(
-                  fixNode.typeParameters ?? fixNode.name,
+                fixer.insertTextAfterRange(
+                  Boolean(fixNode.typeParameters)
+                    ? fixNode.typeParameters.range
+                    : fixNode.name.range,
                   `\ndata-component="${
                     Array.isArray(componentName)
                       ? componentName[0]
