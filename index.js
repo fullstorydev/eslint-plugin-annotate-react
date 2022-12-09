@@ -64,10 +64,11 @@ function isTreeDone(node, excludeComponentNames) {
 
 function isSubtreeDone(node) {
   return (
-    node.type === 'JSXElement' &&
-    node.openingElement.attributes.find(
-      (attributeNode) => attributeNode.name?.name === 'data-component',
-    )
+    node.type === 'JSXFragment' ||
+    (node.type === 'JSXElement' &&
+      node.openingElement.attributes.find(
+        (attributeNode) => attributeNode.name?.name === 'data-component',
+      ))
   );
 }
 
