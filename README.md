@@ -41,3 +41,11 @@ Then configure the rules you want to use under the rules section.
 ### @fullstory/annotate-react/data-component
 
 ...
+
+## Release
+
+Run this command to bump the version, push the tag, and create the release on GitHub:
+
+```sh
+npx np <patch | minor | major> --no-publish --no-tests
+```
