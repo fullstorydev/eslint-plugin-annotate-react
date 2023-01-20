@@ -7,13 +7,17 @@
   "author": "FullStory, Inc.",
   "scripts": {
     "prepare": "pro-commit",
-    "pro-commit:task": "pretty-quick --staged"
+    "pro-commit:task": "pretty-quick --staged",
+    "test": "jest"
   },
   "prettier": {
     "singleQuote": true,
     "trailingComma": "all"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^5.48.2",
+    "eslint": "^8.32.0",
+    "jest": "^29.3.1",
     "prettier": "^2.7.0",
     "pretty-quick": "^3.1.0",
     "pro-commit": "^1.2.0"
