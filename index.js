@@ -138,49 +138,51 @@ const rules = {
               return flag;
             });
 
-          const [componentNode] = componentNodes;
+          componentNodes.forEach((componentNode) => {
+            const componentName =
+              componentNode?.id?.name ??
+              componentNode?.declarations?.map(
+                (declaration) => declaration?.id?.name,
+              );
 
-          const componentName =
-            componentNode?.id?.name ??
-            componentNode?.declarations?.map(
-              (declaration) => declaration?.id?.name,
+            let fixNode = null;
+
+            traverseTree(
+              getReturnStatement(componentNode),
+              visitorKeys,
+              (current) => {
+                if (isSubtreeDone(current)) {
+                  throw DONE_WITH_SUBTREE;
+                } else if (isTreeDone(current, excludeComponentNames)) {
+                  fixNode = current.openingElement;
+
+                  throw DONE_WITH_TREE;
+                }
+              },
             );
 
-          let fixNode = null;
-
-          traverseTree(
-            getReturnStatement(componentNode),
-            visitorKeys,
-            (current) => {
-              if (isSubtreeDone(current)) {
-                throw DONE_WITH_SUBTREE;
-              } else if (isTreeDone(current, excludeComponentNames)) {
-                fixNode = current.openingElement;
-
-                throw DONE_WITH_TREE;
-              }
-            },
-          );
-
-          if (Boolean(componentName)) {
-            context.report({
-              node: fixNode,
-              message: `${
-                Array.isArray(componentName) ? componentName[0] : componentName
-              } is missing the data-component attribute for the top-level element.`,
-              fix: (fixer) =>
-                fixer.insertTextAfterRange(
-                  Boolean(fixNode.typeParameters)
-                    ? fixNode.typeParameters.range
-                    : fixNode.name.range,
-                  `\ndata-component="${
-                    Array.isArray(componentName)
-                      ? componentName[0]
-                      : componentName
-                  }"`,
-                ),
-            });
-          }
+            if (Boolean(componentName)) {
+              context.report({
+                node: fixNode,
+                message: `${
+                  Array.isArray(componentName)
+                    ? componentName[0]
+                    : componentName
+                } is missing the data-component attribute for the top-level element.`,
+                fix: (fixer) =>
+                  fixer.insertTextAfterRange(
+                    Boolean(fixNode.typeParameters)
+                      ? fixNode.typeParameters.range
+                      : fixNode.name.range,
+                    ` data-component="${
+                      Array.isArray(componentName)
+                        ? componentName[0]
+                        : componentName
+                    }"`,
+                  ),
+              });
+            }
+          });
         },
       };
     },
