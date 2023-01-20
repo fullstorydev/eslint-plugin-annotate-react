@@ -36,6 +36,14 @@ Then configure the rules you want to use under the rules section.
 }
 ```
 
+## Running tests in development
+
+Tests can be ran using
+
+```
+npm run test
+```
+
 ## Supported Rules
 
 ### @fullstory/annotate-react/data-component

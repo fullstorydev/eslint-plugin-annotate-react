@@ -6,8 +6,68 @@ const { join } = require('path');
 // Test File Definitions
 //------------------------------------------------------------------------------
 
+const genericTest = `
+const yAxis = (xScale, xTicks) => (
+  <BottomAxis<Date>
+data-component="yAxis" width={1} height={1} xScale={xScale} xTicks={xTicks}>
+    123
+  </BottomAxis>
+); `;
+const genericTestError = `
+const yAxis = (xScale, xTicks) => (
+  <BottomAxis<Date> width={1} height={1} xScale={xScale} xTicks={xTicks}>
+    123
+  </BottomAxis>
+); `;
+
+const renamingComponentDoesntError = `
+const myDiv = () => (
+  <div data-component="temp"/>
+); `;
+
+const nestedComponentsError = /* tsx */ `
+export const FooChart: React.FC<FooChartProps> = props => {
+  const [spacing, setSpacing] = useState({ top: 8, right: 38, bottom: 50, left: 50 });
+
+  return (
+    <Chart height={400} spacing={spacing}>
+      {({ height, width, overlay }) => (
+        <InnerFooChart
+          width={width}
+          height={height}
+          overlay={overlay}
+          spacing={spacing}
+          setSpacing={setSpacing}
+          {...props}
+        />
+      )}
+    </Chart>
+  );
+};`;
+
+const nestedComponents = /* tsx */ `
+export const FooChart: React.FC<FooChartProps> = props => {
+  const [spacing, setSpacing] = useState({ top: 8, right: 38, bottom: 50, left: 50 });
+
+  return (
+    <Chart
+data-component="FooChart" height={400} spacing={spacing}>
+      {({ height, width, overlay }) => (
+        <InnerFooChart
+          width={width}
+          height={height}
+          overlay={overlay}
+          spacing={spacing}
+          setSpacing={setSpacing}
+          {...props}
+        />
+      )}
+    </Chart>
+  );
+};`;
+
 const tests = {
-  'data-component-tsx': {
+  'data-component': {
     // Require the actual rule definition
     rule: require('./index').rules['data-component'],
 
@@ -31,7 +91,17 @@ const tests = {
 
     // Define the test cases
     testCases: {
-      valid: [],
+      valid: [
+        {
+          code: genericTest,
+        },
+        {
+          code: renamingComponentDoesntError,
+        },
+        {
+          code: nestedComponents,
+        },
+      ],
       invalid: [
         {
           code: /* tsx */ `const temp = () => {
@@ -43,6 +113,20 @@ data-component="temp" name="metrics-insights/insight-icon" size={24} />;
           };`,
           errors: [
             'temp is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: genericTestError,
+          output: genericTest,
+          errors: [
+            'yAxis is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: nestedComponentsError,
+          output: nestedComponents,
+          errors: [
+            'FooChart is missing the data-component attribute for the top-level element.',
           ],
         },
       ],
