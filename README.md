@@ -1,6 +1,26 @@
 # @fullstory/eslint-plugin-annotate-react
 
-An ESLint plugin for annotating React components.
+An ESLint plugin for adding 'data-attribute' to React components. The purpose of this plugin is to automatically
+make css selectors. Here is an example
+
+```
+const myDiv = () => (
+  <div/>
+); `;
+```
+
+This plugin will autofix and add data-component to the div
+
+```
+const myDiv = () => (
+  <div data-component="temp"/>
+); `;
+```
+
+This plugin is intended to not be too opinionated. In general the approach is to suggest to the developer to add 'data-attribute' when there is an obvious approach, but in questionable cases, the plugin will tend towards being quiet.
+
+- When there is a [fragment](https://reactjs.org/docs/fragments.html) this plugin won't add data-attribute
+- Where there are multiple return elements this plugin won't add data-attribute
 
 ## Installation
 
@@ -34,6 +54,14 @@ Then configure the rules you want to use under the rules section.
     "@fullstory/annotate-react/data-component": "error"
   }
 }
+```
+
+## Maintaining this plugin
+
+Tests can be ran using
+
+```
+npm run test
 ```
 
 ## Supported Rules
