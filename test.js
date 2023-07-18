@@ -241,6 +241,9 @@ export default forwardRef<HTMLAnchorElement, InternalLinkProps>(
   }
 );`;
 
+const provider = /* tsx */ `
+export const MyProvider = () => <Foo />;
+`;
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -297,6 +300,9 @@ const tests = {
         },
         {
           code: defaultForwardRef,
+        },
+        {
+          code: provider,
         },
       ],
       invalid: [

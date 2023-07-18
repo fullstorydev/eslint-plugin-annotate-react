@@ -1,5 +1,8 @@
+const providerRegex = /Provider$/;
+
 function handleJSX(context, name, jsx) {
   if (
+    !providerRegex.test(name) &&
     !jsx.openingElement.attributes.find(
       (a) => a.name?.name === 'data-component',
     )
