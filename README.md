@@ -6,7 +6,7 @@ make css selectors. Here is an example
 ```
 const myDiv = () => (
   <div/>
-); `;
+);
 ```
 
 This plugin will autofix and add data-component to the div
@@ -14,13 +14,10 @@ This plugin will autofix and add data-component to the div
 ```
 const myDiv = () => (
   <div data-component="temp"/>
-); `;
+);
 ```
 
-This plugin is intended to not be too opinionated. In general the approach is to suggest to the developer to add 'data-attribute' when there is an obvious approach, but in questionable cases, the plugin will tend towards being quiet.
-
-- When there is a [fragment](https://reactjs.org/docs/fragments.html) this plugin won't add data-attribute
-- Where there are multiple return elements this plugin won't add data-attribute
+This plugin is intended to not be too opinionated. In general the approach is to suggest to the developer to add 'data-attribute' when there is an obvious approach, but in questionable cases, the plugin will tend towards being quiet. Click to learn more about the [covered cases](./docs/covered-cases.md).
 
 ## Installation
 

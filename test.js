@@ -14,6 +14,14 @@ const singleComponentError = `const temp = () => {
   return <Icon name="metric" size={24} />;
 };`;
 
+const defaultSingleComponent = `export default function temp () {
+  return <Icon data-component="temp" name="metric" size={24} />;
+};`;
+
+const defaultSingleComponentError = `export default function temp () {
+  return <Icon name="metric" size={24} />;
+};`;
+
 const genericTest = `
 const yAxis = (xScale, xTicks) => (
   <BottomAxis<Date> data-component="yAxis" width={1} height={1} xScale={xScale} xTicks={xTicks}>
@@ -279,6 +287,9 @@ const tests = {
           code: singleComponent,
         },
         {
+          code: defaultSingleComponent,
+        },
+        {
           code: genericTest,
         },
         {
@@ -317,6 +328,13 @@ const tests = {
         {
           code: singleComponentError,
           output: singleComponent,
+          errors: [
+            'temp is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: defaultSingleComponentError,
+          output: defaultSingleComponent,
           errors: [
             'temp is missing the data-component attribute for the top-level element.',
           ],
