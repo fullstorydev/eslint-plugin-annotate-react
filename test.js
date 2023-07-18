@@ -257,6 +257,23 @@ const providerWithDot = /* tsx */ `
 export const Test = () => <Test.Provider />;
 `;
 
+const ternary = /* tsx */ `
+export const TernaryComponent = () => {
+  const active = useIsActive();
+  return active ? <ActiveComponent /> : null;
+};
+`;
+
+const ifBlock = /* tsx */ `
+export const IfBlockComponent = () => {
+  const active = useIsActive();
+  if (active) {
+    return <ActiveComponent />;
+  }
+  return <div />;
+};
+`;
+
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -322,6 +339,12 @@ const tests = {
         },
         {
           code: providerWithDot,
+        },
+        {
+          code: ternary,
+        },
+        {
+          code: ifBlock,
         },
       ],
       invalid: [
