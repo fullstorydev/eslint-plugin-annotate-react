@@ -7,11 +7,11 @@ const { join } = require('path');
 //------------------------------------------------------------------------------
 
 const singleComponent = `const temp = () => {
-  <Icon data-component="temp" name="metric" size={24} />;
+  return <Icon data-component="temp" name="metric" size={24} />;
 };`;
 
 const singleComponentError = `const temp = () => {
-  <Icon name="metric" size={24} />;
+  return <Icon name="metric" size={24} />;
 };`;
 
 const genericTest = `
