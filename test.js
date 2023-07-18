@@ -129,6 +129,60 @@ const classComponentNested = `class Car extends React.Component {
   }
 }`;
 
+const reactForwardRef = /* tsx */ `
+export const InternalLink = React.forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  ({ variant, ...props }, ref) => (
+    <Link
+      data-component="InternalLink"
+      ref={ref}
+      className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+      {...props}
+    >
+      {props.children}
+    </Link>
+  ),
+);`;
+
+const reactForwardRefError = /* tsx */ `
+export const InternalLink = React.forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  ({ variant, ...props }, ref) => (
+    <Link
+      ref={ref}
+      className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+      {...props}
+    >
+      {props.children}
+    </Link>
+  ),
+);`;
+
+const forwardRef = /* tsx */ `
+export const InternalLink = forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  ({ variant, ...props }, ref) => (
+    <Link
+      data-component="InternalLink"
+      ref={ref}
+      className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+      {...props}
+    >
+      {props.children}
+    </Link>
+  ),
+);`;
+
+const forwardRefError = /* tsx */ `
+export const InternalLink = forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  ({ variant, ...props }, ref) => (
+    <Link
+      ref={ref}
+      className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+      {...props}
+    >
+      {props.children}
+    </Link>
+  ),
+);`;
+
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -174,6 +228,12 @@ const tests = {
           // Multiple return paths should not trigger the eslint warning
           code: fragmentsWontUpdate,
         },
+        {
+          code: reactForwardRef,
+        },
+        {
+          code: forwardRef,
+        },
       ],
       invalid: [
         {
@@ -218,6 +278,20 @@ const tests = {
           errors: [
             'Component1 is missing the data-component attribute for the top-level element.',
             'Component2 is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: reactForwardRefError,
+          output: reactForwardRef,
+          errors: [
+            'InternalLink is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: forwardRefError,
+          output: forwardRef,
+          errors: [
+            'InternalLink is missing the data-component attribute for the top-level element.',
           ],
         },
       ],
