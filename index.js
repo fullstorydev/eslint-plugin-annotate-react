@@ -36,6 +36,18 @@ function getReturnStatement(node) {
     return;
   }
 
+  if (node.type === 'ClassDeclaration') {
+    // For class-based components, find the render function, then its return statement
+    renderFunction = node.body?.body?.find(
+      (statement) =>
+        statement.type === 'MethodDefinition' &&
+        statement.key.name === 'render',
+    );
+    return renderFunction.value?.body?.body?.find(
+      (statement) => statement.type === 'ReturnStatement',
+    );
+  }
+
   return node.type === 'VariableDeclaration'
     ? node.declarations?.[0]?.init?.body?.body?.find(
         (statement) => statement.type === 'ReturnStatement',
@@ -99,7 +111,8 @@ const rules = {
             .filter(
               (child) =>
                 child.type === 'VariableDeclaration' ||
-                child.type === 'FunctionDeclaration',
+                child.type === 'FunctionDeclaration' ||
+                child.type === 'ClassDeclaration',
             )
             .filter((child) => {
               let flag = false;

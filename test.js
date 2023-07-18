@@ -9,6 +9,7 @@ const { join } = require('path');
 const singleComponent = `const temp = () => {
   <Icon data-component="temp" name="metric" size={24} />;
 };`;
+
 const singleComponentError = `const temp = () => {
   <Icon name="metric" size={24} />;
 };`;
@@ -88,6 +89,46 @@ const fragmentsWontUpdate = `const Component = () =>
   </>
 ;`;
 
+const classComponent = `class Car extends React.Component {
+  render() {
+    return <h2 data-component="Car">Hi, I am a Car!</h2>;
+  }
+}`;
+
+const classComponentError = `class Car extends React.Component {
+  render() {
+    return <h2>Hi, I am a Car!</h2>;
+  }
+}`;
+
+const classComponentNestedError = `class Car extends React.Component {
+  render() {
+    const Door = () => (
+      <h1>I am a door!</h1>
+    );
+    return (
+      <div>
+        <Door />
+        <h2>Hi, I am a Car!</h2>
+      </div>
+    );
+  }
+}`;
+
+const classComponentNested = `class Car extends React.Component {
+  render() {
+    const Door = () => (
+      <h1>I am a door!</h1>
+    );
+    return (
+      <div data-component="Car">
+        <Door />
+        <h2>Hi, I am a Car!</h2>
+      </div>
+    );
+  }
+}`;
+
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -140,6 +181,20 @@ const tests = {
           output: singleComponent,
           errors: [
             'temp is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: classComponentError,
+          output: classComponent,
+          errors: [
+            'Car is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: classComponentNestedError,
+          output: classComponentNested,
+          errors: [
+            'Car is missing the data-component attribute for the top-level element.',
           ],
         },
         {
