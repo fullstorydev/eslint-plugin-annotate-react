@@ -1,101 +1,71 @@
-const [DONE_WITH_TREE, DONE_WITH_SUBTREE] = [1, 2];
+const providerRegex = /Provider$/;
 
-function traverseTree(node, visitorKeys, callback) {
-  const stack = [[node, [], null]];
-
-  while (stack.length > 0) {
-    try {
-      const current = stack.shift();
-      const [currentNode, ancestors] = current;
-
-      callback(...current);
-
-      for (const visitorKey of visitorKeys[currentNode.type] ?? []) {
-        const child = currentNode[visitorKey];
-
-        if (Array.isArray(child)) {
-          for (const childItem of child) {
-            stack.push([childItem, [currentNode, ...ancestors], visitorKey]);
-          }
-        } else if (Boolean(child)) {
-          stack.push([child, [currentNode, ...ancestors], visitorKey]);
-        }
-      }
-    } catch (code) {
-      if (code === DONE_WITH_TREE) {
-        break;
-      } else if (code === DONE_WITH_SUBTREE) {
-        continue;
-      }
-    }
-  }
-}
-
-function getReturnStatement(node) {
-  if (!Boolean(node)) {
-    return;
-  }
-
-  if (node.type === 'ClassDeclaration') {
-    // For class-based components, find the render function, then its return statement
-    renderFunction = node.body?.body?.find(
-      (statement) =>
-        statement.type === 'MethodDefinition' &&
-        statement.key.name === 'render',
-    );
-    return renderFunction.value?.body?.body?.find(
-      (statement) => statement.type === 'ReturnStatement',
-    );
-  }
-
-  if (node.type === 'ArrowFunctionExpression') return node.body;
-  return node.type === 'VariableDeclaration'
-    ? node.declarations?.[0]?.init?.body?.body?.find(
-        (statement) => statement.type === 'ReturnStatement',
-      ) ??
-        node.declarations?.[0]?.init?.arguments?.[0]?.body ??
-        node.declarations?.[0]?.init?.body
-    : node.body?.body?.find(
-        (statement) => statement.type === 'ReturnStatement',
-      );
-}
-
-function isForwardRef(node) {
-  if (!Boolean(node)) {
-    return;
-  }
-
-  return node.type === 'VariableDeclaration'
-    ? node.declarations?.[0]?.init?.callee?.property?.name === 'forwardRef'
-    : node.callee?.name === 'forwardRef' ||
-        node.callee?.property?.name === 'forwardRef';
-}
-
-function isTreeDone(node, excludeComponentNames) {
-  return (
-    node.type === 'JSXElement' &&
-    excludeComponentNames.every(
-      (regex) =>
-        !regex.test(
-          node.openingElement.name.property
-            ? node.openingElement.name.property.name
-            : node.openingElement.name.name,
-        ),
-    ) &&
-    !node.openingElement.attributes.find(
-      (attributeNode) => attributeNode.name?.name === 'data-component',
+function handleJSX(context, name, jsx) {
+  if (
+    !providerRegex.test(name) &&
+    !jsx.openingElement.attributes.find(
+      (a) => a.name?.name === 'data-component',
     )
-  );
+  ) {
+    context.report({
+      node: jsx,
+      message: `${name} is missing the data-component attribute for the top-level element.`,
+      fix(fixer) {
+        return fixer.insertTextAfterRange(
+          jsx.openingElement.typeParameters
+            ? jsx.openingElement.typeParameters.range
+            : jsx.openingElement.name.range,
+          ` data-component="${name}"`,
+        );
+      },
+    });
+  }
 }
 
-function isSubtreeDone(node) {
-  return (
-    node.type === 'JSXFragment' ||
-    (node.type === 'JSXElement' &&
-      node.openingElement.attributes.find(
-        (attributeNode) => attributeNode.name?.name === 'data-component',
-      ))
-  );
+function handleBlockStatement(context, name, block) {
+  // Find the root return statement. Are there any other types of returns we need to handle?
+  const ret = block.body.find((c) => c.type === 'ReturnStatement');
+  if (ret && ret.argument.type === 'JSXElement') {
+    handleJSX(context, name, ret.argument);
+  }
+}
+
+function isForwardRef(expression) {
+  const calleeName =
+    expression.callee.type === 'MemberExpression'
+      ? expression.callee.property.name
+      : expression.callee.name;
+  return calleeName === 'forwardRef' && expression.arguments.length == 1;
+}
+
+function handleExpression(context, name, expression) {
+  switch (expression.type) {
+    case 'FunctionExpression':
+      handleBlockStatement(context, name, expression.body);
+      break;
+    case 'ArrowFunctionExpression':
+      switch (expression.body.type) {
+        case 'JSXElement':
+          handleJSX(context, name, expression.body);
+          break;
+        case 'BlockStatement':
+          handleBlockStatement(context, name, expression.body);
+          break;
+      }
+      break;
+    case 'ClassExpression':
+      expression.body.body.forEach((x) => {
+        if (x.type === 'MethodDefinition' && x.key.name === 'render') {
+          handleBlockStatement(context, name, x.value.body);
+        }
+      });
+      break;
+    case 'CallExpression':
+      if (isForwardRef(expression)) {
+        handleExpression(context, name, expression.arguments[0]);
+      }
+      break;
+  }
 }
 
 const rules = {
@@ -111,112 +81,53 @@ const rules = {
       fixable: 'code',
     },
     create(context) {
-      const { visitorKeys } = context.getSourceCode();
-
-      const excludeComponentNames =
-        context.options?.[0]?.excludeComponentNames?.map(
-          (regex) => new RegExp(regex),
-        ) ?? [/Provider$/];
-
       return {
-        Program(node) {
-          const componentNodes = node.body
-            .map((child) => {
-              const declaration = child?.declaration ?? child;
-              if (isForwardRef(declaration)) {
-                // do something
-                return declaration?.arguments?.[0] ?? declaration;
-              }
-              return declaration;
-            })
-            .filter(
-              (child) =>
-                child.type === 'VariableDeclaration' ||
-                child.type === 'FunctionDeclaration' ||
-                child.type === 'ClassDeclaration' ||
-                child.type === 'FunctionExpression' ||
-                child.type === 'ArrowFunctionExpression',
-            )
-            .filter((child) => {
-              let flag = false;
+        Program(root) {
+          root.body.forEach((node) => {
+            // We will need to save any non-exported declarations and handle them only if they get exported at the end
+            let exported = false;
+            if (
+              (node.type === 'ExportNamedDeclaration' ||
+                node.type === 'ExportDefaultDeclaration') &&
+              node.declaration
+            ) {
+              exported = true;
+              node = node.declaration;
+            }
 
-              traverseTree(
-                getReturnStatement(child),
-                visitorKeys,
-                (current) => {
-                  if (current.type === 'JSXElement') {
-                    flag = true;
-
-                    throw DONE_WITH_TREE;
+            switch (node.type) {
+              case 'VariableDeclaration':
+                node.declarations.forEach((variable) => {
+                  handleExpression(context, variable.id.name, variable.init);
+                });
+                break;
+              case 'FunctionDeclaration':
+                handleBlockStatement(context, node.id.name, node.body);
+                break;
+              case 'ClassDeclaration':
+                node.body.body.forEach((x) => {
+                  if (
+                    x.type === 'MethodDefinition' &&
+                    x.key.name === 'render'
+                  ) {
+                    handleBlockStatement(context, node.id.name, x.value.body);
+                    return;
                   }
-                },
-              );
-
-              return flag;
-            })
-            .filter((child) => {
-              let flag = false;
-
-              traverseTree(
-                getReturnStatement(child),
-                visitorKeys,
-                (current) => {
-                  if (isSubtreeDone(current)) {
-                    throw DONE_WITH_SUBTREE;
-                  } else if (isTreeDone(current, excludeComponentNames)) {
-                    flag = true;
-
-                    throw DONE_WITH_TREE;
-                  }
-                },
-              );
-
-              return flag;
-            });
-
-          componentNodes.forEach((componentNode) => {
-            const componentName =
-              componentNode?.id?.name ??
-              componentNode?.declarations?.map(
-                (declaration) => declaration?.id?.name,
-              );
-
-            let fixNode = null;
-
-            traverseTree(
-              getReturnStatement(componentNode),
-              visitorKeys,
-              (current) => {
-                if (isSubtreeDone(current)) {
-                  throw DONE_WITH_SUBTREE;
-                } else if (isTreeDone(current, excludeComponentNames)) {
-                  fixNode = current.openingElement;
-
-                  throw DONE_WITH_TREE;
+                });
+                break;
+              case 'CallExpression':
+                if (
+                  isForwardRef(node) &&
+                  node.arguments[0].type === 'FunctionExpression' &&
+                  node.arguments[0].id
+                ) {
+                  handleExpression(
+                    context,
+                    node.arguments[0].id.name,
+                    node.arguments[0],
+                  );
                 }
-              },
-            );
-
-            if (Boolean(componentName)) {
-              context.report({
-                node: fixNode,
-                message: `${
-                  Array.isArray(componentName)
-                    ? componentName[0]
-                    : componentName
-                } is missing the data-component attribute for the top-level element.`,
-                fix: (fixer) =>
-                  fixer.insertTextAfterRange(
-                    Boolean(fixNode.typeParameters)
-                      ? fixNode.typeParameters.range
-                      : fixNode.name.range,
-                    ` data-component="${
-                      Array.isArray(componentName)
-                        ? componentName[0]
-                        : componentName
-                    }"`,
-                  ),
-              });
+                break;
             }
           });
         },

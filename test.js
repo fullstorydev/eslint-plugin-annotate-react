@@ -7,11 +7,11 @@ const { join } = require('path');
 //------------------------------------------------------------------------------
 
 const singleComponent = `const temp = () => {
-  <Icon data-component="temp" name="metric" size={24} />;
+  return <Icon data-component="temp" name="metric" size={24} />;
 };`;
 
 const singleComponentError = `const temp = () => {
-  <Icon name="metric" size={24} />;
+  return <Icon name="metric" size={24} />;
 };`;
 
 const genericTest = `
@@ -241,6 +241,9 @@ export default forwardRef<HTMLAnchorElement, InternalLinkProps>(
   }
 );`;
 
+const provider = /* tsx */ `
+export const MyProvider = () => <Foo />;
+`;
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -297,6 +300,9 @@ const tests = {
         },
         {
           code: defaultForwardRef,
+        },
+        {
+          code: provider,
         },
       ],
       invalid: [
