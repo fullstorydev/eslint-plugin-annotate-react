@@ -80,13 +80,13 @@ const multipleComponents = `
             const Component2 = () => <span data-component="Component2" />;
           `;
 
-const fragmentsWontUpdate = `const Component = () => {
+const fragmentsWontUpdate = `const Component = () => 
   <>
     <a/>
     <a/>
     <a/>
   </>
-};`;
+;`;
 
 const tests = {
   'data-component': {
