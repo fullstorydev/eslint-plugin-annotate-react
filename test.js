@@ -242,8 +242,13 @@ export default forwardRef<HTMLAnchorElement, InternalLinkProps>(
 );`;
 
 const provider = /* tsx */ `
-export const MyProvider = () => <Foo />;
+export const Test = () => <TestProvider />;
 `;
+
+const providerWithDot = /* tsx */ `
+export const Test = () => <Test.Provider />;
+`;
+
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -303,6 +308,9 @@ const tests = {
         },
         {
           code: provider,
+        },
+        {
+          code: providerWithDot,
         },
       ],
       invalid: [

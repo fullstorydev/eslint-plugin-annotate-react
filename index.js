@@ -1,8 +1,19 @@
 const providerRegex = /Provider$/;
 
+function getJSXElementName(jsx) {
+  if (jsx.openingElement.name.type === 'JSXIdentifier') {
+    // e.g. List
+    return jsx.openingElement.name.name;
+  }
+  if (jsx.openingElement.name.type === 'JSXMemberExpression') {
+    // e.g. List.Provider
+    return `${jsx.openingElement.name.object.name}.${jsx.openingElement.name.property.name}`;
+  }
+}
+
 function handleJSX(context, name, jsx) {
   if (
-    !providerRegex.test(name) &&
+    !providerRegex.test(getJSXElementName(jsx)) &&
     !jsx.openingElement.attributes.find(
       (a) => a.name?.name === 'data-component',
     )
