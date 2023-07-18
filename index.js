@@ -48,13 +48,27 @@ function getReturnStatement(node) {
     );
   }
 
+  if (node.type === 'ArrowFunctionExpression') return node.body;
   return node.type === 'VariableDeclaration'
     ? node.declarations?.[0]?.init?.body?.body?.find(
         (statement) => statement.type === 'ReturnStatement',
-      ) ?? node.declarations?.[0]?.init?.body
+      ) ??
+        node.declarations?.[0]?.init?.arguments?.[0]?.body ??
+        node.declarations?.[0]?.init?.body
     : node.body?.body?.find(
         (statement) => statement.type === 'ReturnStatement',
       );
+}
+
+function isForwardRef(node) {
+  if (!Boolean(node)) {
+    return;
+  }
+
+  return node.type === 'VariableDeclaration'
+    ? node.declarations?.[0]?.init?.callee?.property?.name === 'forwardRef'
+    : node.callee?.name === 'forwardRef' ||
+        node.callee?.property?.name === 'forwardRef';
 }
 
 function isTreeDone(node, excludeComponentNames) {
@@ -107,12 +121,21 @@ const rules = {
       return {
         Program(node) {
           const componentNodes = node.body
-            .map((child) => child?.declaration ?? child)
+            .map((child) => {
+              const declaration = child?.declaration ?? child;
+              if (isForwardRef(declaration)) {
+                // do something
+                return declaration?.arguments?.[0] ?? declaration;
+              }
+              return declaration;
+            })
             .filter(
               (child) =>
                 child.type === 'VariableDeclaration' ||
                 child.type === 'FunctionDeclaration' ||
-                child.type === 'ClassDeclaration',
+                child.type === 'ClassDeclaration' ||
+                child.type === 'FunctionExpression' ||
+                child.type === 'ArrowFunctionExpression',
             )
             .filter((child) => {
               let flag = false;

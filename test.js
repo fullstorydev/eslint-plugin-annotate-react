@@ -132,8 +132,7 @@ const classComponentNested = `class Car extends React.Component {
 const reactForwardRef = /* tsx */ `
 export const InternalLink = React.forwardRef<HTMLAnchorElement, InternalLinkProps>(
   ({ variant, ...props }, ref) => (
-    <Link
-      data-component="InternalLink"
+    <Link data-component="InternalLink"
       ref={ref}
       className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
       {...props}
@@ -159,8 +158,7 @@ export const InternalLink = React.forwardRef<HTMLAnchorElement, InternalLinkProp
 const forwardRef = /* tsx */ `
 export const InternalLink = forwardRef<HTMLAnchorElement, InternalLinkProps>(
   ({ variant, ...props }, ref) => (
-    <Link
-      data-component="InternalLink"
+    <Link data-component="InternalLink"
       ref={ref}
       className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
       {...props}
@@ -181,6 +179,66 @@ export const InternalLink = forwardRef<HTMLAnchorElement, InternalLinkProps>(
       {props.children}
     </Link>
   ),
+);`;
+
+const defaultReactForwardRef = /* tsx */ `
+export default React.forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  function InternalLink({ variant, ...props }, ref) {
+    return (
+      <Link data-component="InternalLink"
+        ref={ref}
+        className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+        {...props}
+      >
+        {props.children}
+      </Link>
+    );
+  }
+);`;
+
+const defaultReactForwardRefError = /* tsx */ `
+export default React.forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  function InternalLink({ variant, ...props }, ref) {
+    return (
+      <Link
+        ref={ref}
+        className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+        {...props}
+      >
+        {props.children}
+      </Link>
+    );
+  }
+);`;
+
+const defaultForwardRef = /* tsx */ `
+export default forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  function InternalLink({ variant, ...props }, ref) {
+    return (
+      <Link data-component="InternalLink"
+        ref={ref}
+        className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+        {...props}
+      >
+        {props.children}
+      </Link>
+    );
+  }
+);`;
+
+const defaultForwardRefError = /* tsx */ `
+export default forwardRef<HTMLAnchorElement, InternalLinkProps>(
+  function InternalLink({ variant, ...props }, ref) {
+    return (
+      <Link
+        ref={ref}
+        className={classNames(css.link, { [css.inverse]: variant === 'inverse' })}
+        {...props}
+      >
+        {props.children}
+      </Link>
+    );
+  }
 );`;
 
 const tests = {
@@ -233,6 +291,12 @@ const tests = {
         },
         {
           code: forwardRef,
+        },
+        {
+          code: defaultReactForwardRef,
+        },
+        {
+          code: defaultForwardRef,
         },
       ],
       invalid: [
@@ -290,6 +354,20 @@ const tests = {
         {
           code: forwardRefError,
           output: forwardRef,
+          errors: [
+            'InternalLink is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: defaultReactForwardRefError,
+          output: defaultReactForwardRef,
+          errors: [
+            'InternalLink is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: defaultForwardRefError,
+          output: defaultForwardRef,
           errors: [
             'InternalLink is missing the data-component attribute for the top-level element.',
           ],
