@@ -48,6 +48,7 @@ const Component2 = () => <span />;
 ```
 
 > Component1 is missing the data-component attribute for the top-level element.
+
 > Component2 is missing the data-component attribute for the top-level element.
 
 #### Class-based components
