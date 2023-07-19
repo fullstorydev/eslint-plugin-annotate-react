@@ -1,23 +1,24 @@
 # @fullstory/eslint-plugin-annotate-react
 
-An ESLint plugin for adding 'data-attribute' to React components. The purpose of this plugin is to automatically
-make css selectors. Here is an example
+An ESLint plugin for adding 'data-attribute' to React components. The purpose of this plugin is to automatically make css selectors. Here is an example:
 
 ```
-const myDiv = () => (
-  <div/>
+const MyComponent = () => (
+  <div />
 );
 ```
 
-This plugin will autofix and add data-component to the div
+This plugin will autofix and add the `data-component` prop to the div:
 
 ```
-const myDiv = () => (
-  <div data-component="temp"/>
+const MyComponent = () => (
+  <div data-component="MyComponent" />
 );
 ```
 
-This plugin is intended to not be too opinionated. In general the approach is to suggest to the developer to add 'data-attribute' when there is an obvious approach, but in questionable cases, the plugin will tend towards being quiet. Click to learn more about the [covered cases](./docs/covered-cases.md).
+This plugin is intended to not be too opinionated. In general the approach is to suggest to the developer to add 'data-component' when there is an obvious approach, but in questionable cases, the plugin will tend towards being quiet. Click to learn more about the [covered cases](./docs/covered-cases.md).
+
+_Note: This plugin cannot guarantee that the `data-component` prop will actually make it to the DOM node if the top level element is another React component. For it to work effectively, make sure you are properly [forwarding props with the JSX spread syntax](https://react.dev/learn/passing-props-to-a-component#forwarding-props-with-the-jsx-spread-syntax)._
 
 ## Installation
 
