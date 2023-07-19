@@ -14,6 +14,14 @@ const singleComponentError = `const temp = () => {
   return <Icon name="metric" size={24} />;
 };`;
 
+const defaultSingleComponent = `export default function temp () {
+  return <Icon data-component="temp" name="metric" size={24} />;
+};`;
+
+const defaultSingleComponentError = `export default function temp () {
+  return <Icon name="metric" size={24} />;
+};`;
+
 const genericTest = `
 const yAxis = (xScale, xTicks) => (
   <BottomAxis<Date> data-component="yAxis" width={1} height={1} xScale={xScale} xTicks={xTicks}>
@@ -249,6 +257,23 @@ const providerWithDot = /* tsx */ `
 export const Test = () => <Test.Provider />;
 `;
 
+const ternary = /* tsx */ `
+export const TernaryComponent = () => {
+  const active = useIsActive();
+  return active ? <ActiveComponent /> : null;
+};
+`;
+
+const ifBlock = /* tsx */ `
+export const IfBlockComponent = () => {
+  const active = useIsActive();
+  if (active) {
+    return <ActiveComponent />;
+  }
+  return <div />;
+};
+`;
+
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -277,6 +302,9 @@ const tests = {
       valid: [
         {
           code: singleComponent,
+        },
+        {
+          code: defaultSingleComponent,
         },
         {
           code: genericTest,
@@ -312,11 +340,24 @@ const tests = {
         {
           code: providerWithDot,
         },
+        {
+          code: ternary,
+        },
+        {
+          code: ifBlock,
+        },
       ],
       invalid: [
         {
           code: singleComponentError,
           output: singleComponent,
+          errors: [
+            'temp is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: defaultSingleComponentError,
+          output: defaultSingleComponent,
           errors: [
             'temp is missing the data-component attribute for the top-level element.',
           ],
