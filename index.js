@@ -19,7 +19,7 @@ function handleJSX(context, name, jsx) {
     )
   ) {
     context.report({
-      node: jsx,
+      node: jsx.openingElement,
       message: `${name} is missing the data-component attribute for the top-level element.`,
       fix(fixer) {
         return fixer.insertTextAfterRange(
