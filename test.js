@@ -6,11 +6,11 @@ const { join } = require('path');
 // Test File Definitions
 //------------------------------------------------------------------------------
 
-const singleComponent = `const temp = () => {
+const singleComponent = `export const temp = () => {
   return <Icon data-component="temp" name="metric" size={24} />;
 };`;
 
-const singleComponentError = `const temp = () => {
+const singleComponentError = `export const temp = () => {
   return <Icon name="metric" size={24} />;
 };`;
 
@@ -23,20 +23,20 @@ const defaultSingleComponentError = `export default function temp () {
 };`;
 
 const genericTest = `
-const yAxis = (xScale, xTicks) => (
+export const yAxis = (xScale, xTicks) => (
   <BottomAxis<Date> data-component="yAxis" width={1} height={1} xScale={xScale} xTicks={xTicks}>
     123
   </BottomAxis>
 ); `;
 const genericTestError = `
-const yAxis = (xScale, xTicks) => (
+export const yAxis = (xScale, xTicks) => (
   <BottomAxis<Date> width={1} height={1} xScale={xScale} xTicks={xTicks}>
     123
   </BottomAxis>
 ); `;
 
 const renamingComponentDoesntError = `
-const myDiv = () => (
+export const myDiv = () => (
   <div data-component="temp"/>
 ); `;
 
@@ -83,13 +83,15 @@ export const FooChart: React.FC<FooChartProps> = props => {
 const multipleComponentsErrors = `
             const Component1 = () => <div />;
             const Component2 = () => <span />;
+            export { Component1, Component2 }
           `;
 const multipleComponents = `
             const Component1 = () => <div data-component="Component1" />;
             const Component2 = () => <span data-component="Component2" />;
+            export { Component1, Component2 }
           `;
 
-const fragmentsWontUpdate = `const Component = () => 
+const fragmentsWontUpdate = `export const Component = () => 
   <>
     <a/>
     <a/>
@@ -97,19 +99,19 @@ const fragmentsWontUpdate = `const Component = () =>
   </>
 ;`;
 
-const classComponent = `class Car extends React.Component {
+const classComponent = `export class Car extends React.Component {
   render() {
     return <h2 data-component="Car">Hi, I am a Car!</h2>;
   }
 }`;
 
-const classComponentError = `class Car extends React.Component {
+const classComponentError = `export class Car extends React.Component {
   render() {
     return <h2>Hi, I am a Car!</h2>;
   }
 }`;
 
-const classComponentNestedError = `class Car extends React.Component {
+const classComponentNestedError = `export class Car extends React.Component {
   render() {
     const Door = () => (
       <h1>I am a door!</h1>
@@ -123,7 +125,7 @@ const classComponentNestedError = `class Car extends React.Component {
   }
 }`;
 
-const classComponentNested = `class Car extends React.Component {
+const classComponentNested = `export class Car extends React.Component {
   render() {
     const Door = () => (
       <h1>I am a door!</h1>
@@ -264,14 +266,22 @@ export const TernaryComponent = () => {
 };
 `;
 
-const ifBlock = /* tsx */ `
-export const IfBlockComponent = () => {
-  const active = useIsActive();
-  if (active) {
-    return <ActiveComponent />;
-  }
-  return <div />;
-};
+const exportedError = /* tsx */ `
+const NotExported = () => <Foo />
+export const Exported = () => <Foo />
+export default DefaultExported = () => <Foo />
+const ExportedAtEnd = () => <Foo />
+const RenamedExport = () => <Foo />
+export { ExportedAtEnd, RenamedExport as ThisIsRenamed }
+`;
+
+const exported = /* tsx */ `
+const NotExported = () => <Foo />
+export const Exported = () => <Foo data-component="Exported" />
+export default DefaultExported = () => <Foo data-component="DefaultExported" />
+const ExportedAtEnd = () => <Foo data-component="ExportedAtEnd" />
+const RenamedExport = () => <Foo data-component="RenamedExport" />
+export { ExportedAtEnd, RenamedExport as ThisIsRenamed }
 `;
 
 const tests = {
@@ -344,7 +354,7 @@ const tests = {
           code: ternary,
         },
         {
-          code: ifBlock,
+          code: exported,
         },
       ],
       invalid: [
@@ -425,6 +435,16 @@ const tests = {
           output: defaultForwardRef,
           errors: [
             'InternalLink is missing the data-component attribute for the top-level element.',
+          ],
+        },
+        {
+          code: exportedError,
+          output: exported,
+          errors: [
+            'Exported is missing the data-component attribute for the top-level element.',
+            'DefaultExported is missing the data-component attribute for the top-level element.',
+            'ExportedAtEnd is missing the data-component attribute for the top-level element.',
+            'RenamedExport is missing the data-component attribute for the top-level element.',
           ],
         },
       ],
