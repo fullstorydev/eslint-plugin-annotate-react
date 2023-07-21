@@ -367,6 +367,9 @@ const tests = {
         {
           code: exported,
         },
+        // {
+        //   code: ifBlock,
+        // },
       ],
       invalid: [
         {
