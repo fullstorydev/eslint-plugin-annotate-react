@@ -284,6 +284,17 @@ const RenamedExport = () => <Foo data-component="RenamedExport" />
 export { ExportedAtEnd, RenamedExport as ThisIsRenamed }
 `;
 
+// TODO: Implement fix for if block conditionals
+// const ifBlock = /* tsx */ `
+// export const IfBlockComponent = () => {
+//   const active = useIsActive();
+//   if (active) {
+//     return <ActiveComponent />;
+//   }
+//   return <div />;
+// };
+// `;
+
 const tests = {
   'data-component': {
     // Require the actual rule definition
@@ -356,6 +367,9 @@ const tests = {
         {
           code: exported,
         },
+        // {
+        //   code: ifBlock,
+        // },
       ],
       invalid: [
         {
